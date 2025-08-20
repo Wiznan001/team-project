@@ -125,5 +125,3 @@ void printResults(double V, double R1, double R2, double R3, double R4, double I
     cout << "电阻 R4: " << fixed << setprecision(3) << R4 << " Ω" << endl;
     cout << "\n计算得到的电流 I: " << fixed << setprecision(3) << I << " A" << endl;
 }
-int a = 1;
-cout << a << endl;
