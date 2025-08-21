@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星座生日查询 - 您的专属人生日历</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 35px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stars" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="20" cy="20" r="1.5" fill="white" opacity="0.3"/><circle cx="50" cy="50" r="1" fill="white" opacity="0.3"/><circle cx="80" cy="80" r="2" fill="white" opacity="0.3"/><circle cx="10" cy="80" r="1" fill="white" opacity="0.3"/><circle cx="70" cy="20" r="1.5" fill="white" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)" /></svg>');
+            opacity: 0.1;
+            animation: rotateStars 120s linear infinite;
+        }
+        
+        @keyframes rotateStars {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #444;
+            font-size: 17px;
+        }
+        
+        .date-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .date-input:focus {
+            border-color: #6a11cb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.15), inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .func-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 15px;
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 120px;
+        }
+        
+        .func-btn:hover {
+            border-color: #6a11cb;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .func-btn i {
+            font-size: 32px;
+            color: #6a11cb;
+            margin-bottom: 12px;
+        }
+        
+        .result {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 18px;
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #e0e6ef;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .result h3 {
+            color: #6a11cb;
+            margin-bottom: 18px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .zodiac-icon {
+            font-size: 70px;
+            margin: 18px 0;
+            color: #6a11cb;
+            text-shadow: 0 2px 8px rgba(106, 17, 203, 0.3);
+        }
+        
+        .luck-meter {
+            width: 85%;
+            height: 22px;
+            background-color: #e9ecef;
+            border-radius: 12px;
+            margin: 18px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .luck-level {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(to right, #ff6b6b, #feca57, #48dbfb);
+            transition: width 1.2s ease;
+        }
+        
+        .stars {
+            font-size: 32px;
+            color: gold;
+            margin: 18px 0;
+            letter-spacing: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .age-display {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 20px 0;
+        }
+        
+        .age-item {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            min-width: 120px;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .age-item h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .age-item .number {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .back-btn {
+            background: none;
+            border: 2px solid #6a11cb;
+            color: #6a11cb;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto 0;
+        }
+        
+        .back-btn:hover {
+            background: #6a11cb;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .back-btn i {
+            margin-right: 8px;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(106, 17, 203, 0.2);
+            border-radius: 50%;
+            border-top-color: #6a11cb;
+            animation: spin 1.2s ease-in-out infinite;
+            margin-bottom: 18px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .success {
+            color: #27ae60;
+            text-align: center;
+        }
+        
+        .info-text {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        .export-btn {
+            background: linear-gradient(to right, #f5af19, #f12711);
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(245, 175, 25, 0.3);
+        }
+        
+        @media (max-width: 600px) {
+            .function-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .func-btn {
+                padding: 18px;
+                min-height: 100px;
+            }
+            
+            .age-display {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>星座生日查询</h1>
+            <p class="subtitle">探索您的星座奥秘，预见人生旅程</p>
+        </div>
+        
+        <div class="content">
+            <!-- 欢迎页面 -->
+            <div id="welcome-page" class="page active">
+                <div class="input-group">
+                    <label for="birthdate"><i class="fas fa-calendar-day"></i> 请输入您的出生日期</label>
+                    <input type="date" id="birthdate" class="date-input" required>
+                    <p class="info-text">选择准确的出生日期以获得个性化结果</p>
+                </div>
+                
+                <button class="btn" onclick="navigateTo('main-page')">
+                    <i class="fas fa-rocket"></i> 开始探索之旅
+                </button>
+            </div>
+            
+            <!-- 主功能页面 -->
+            <div id="main-page" class="page">
+                <h2>欢迎使用星座查询</h2>
+                <p style="text-align: center; margin-bottom: 25px; color: #7f8c8d;">
+                    当前选择: <span id="current-birthdate" style="color: #6a11cb; font-weight: 600;"></span>
+                </p>
+                
+                <div class="function-grid">
+                    <button class="func-btn" onclick="calculateDaysToBirthday()">
+                        <i class="fas fa-birthday-cake"></i>
+                        <span>生日倒计时</span>
+                    </button>
+                    
+                    <button class="func-btn" onclick="findZodiacSign()">
+                        <i class="fas fa-star"></i>
+                        <span>星座查询</span>
+                    </button>
+                    
+                    <button class="func-btn" onclick="calculateAge()">
+                        <i class="fas fa-user"></i>
+                        <span>年龄计算</span>
+                    </button>
+                    
+                    <button class="func-btn" onclick="checkDailyLuck()">
+                        <i class="fas fa-clover"></i>
+                        <span>今日运势</span>
+                    </button>
+                </div>
+                
+                <div class="result" id="result">
+                    <i class="fas fa-info-circle" style="font-size: 45px; color: #6a11cb; margin-bottom: 18px;"></i>
+                    <p>请选择一个功能查看详细结果</p>
+                </div>
+                
+                <button class="btn export-btn" onclick="exportReport()">
+                    <i class="fas fa-download"></i> 导出完整报告
+                </button>
+                
+                <button class="back-btn" onclick="navigateTo('welcome-page')">
+                    <i class="fas fa-arrow-left"></i> 返回重新选择
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let selectedDate = null;
+        
+        // 页面导航函数
+        function navigateTo(pageId) {
+            const birthdate = document.getElementById('birthdate').value;
+            if (pageId === 'main-page' && !birthdate) {
+                alert('请先选择出生日期');
+                return;
+            }
+            
+            if (birthdate) {
+                selectedDate = new Date(birthdate);
+                document.getElementById('current-birthdate').textContent = 
+                    formatDate(selectedDate);
+            }
+            
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'welcome-page') {
+                document.getElementById('result').innerHTML = `
+                    <i class="fas fa-info-circle" style="font-size: 45px; color: #6a11cb; margin-bottom: 18px;"></i>
+                    <p>请选择一个功能查看详细结果</p>
+                `;
+            }
+        }
+        
+        // 格式化日期显示
+        function formatDate(date) {
+            return date ? 
+                `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, '0')}月${date.getDate().toString().padStart(2, '0')}日` : 
+                '未选择日期';
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('result').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载中，请稍候...</p>
+                </div>
+            `;
+        }
+        
+        // 显示错误
+        function showError(message) {
+            document.getElementById('result').innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 45px; margin-bottom: 18px;"></i>
+                    <h3>出错了</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        // 计算周岁和虚岁
+        function calculateChineseAge(birthDate) {
+            const today = new Date();
+            const birthYear = birthDate.getFullYear();
+            const birthMonth = birthDate.getMonth();
+            const birthDay = birthDate.getDate();
+            
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            const currentDay = today.getDate();
+            
+            // 计算周岁
+            let actualAge = currentYear - birthYear;
+            if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+                actualAge--;
+            }
+            
+            // 计算虚岁（中国传统年龄计算方式）
+            let nominalAge = currentYear - birthYear + 1;
+            
+            return { actualAge, nominalAge };
+        }
+        
+        // 计算距离生日的天数
+        function calculateDaysToBirthday() {
+            if (!selectedDate) {
+                showError('请先选择出生日期');
+                return;
+            }
+
+            showLoading();
+            
+            setTimeout(() => {
+                try {
+                    const today = new Date();
+                    const birthDate = new Date(selectedDate);
+                    
+                    // 计算下一个生日
+                    const nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+                    if (nextBirthday < today) {
+                        nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                    }
+                    
+                    // 计算天数差
+                    const daysLeft = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+                    
+                    // 计算已经出生的天数
+                    const daysAlive = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
+                    
+                    document.getElementById('result').innerHTML = `
+                        <h3>生日倒计时</h3>
+                        <i class="fas fa-birthday-cake zodiac-icon"></i>
+                        <p>距离您下一个生日还有：</p>
+                        <h2 style="color: #6a11cb; font-size: 42px; margin: 15px 0;">${daysLeft} 天</h2>
+                        <p>您已经在这个世界上度过了 <strong style="color: #2575fc;">${daysAlive}</strong> 天</p>
+                    `;
+                } catch (error) {
+                    showError('计算失败，请检查日期格式');
+                }
+            }, 800);
+        }
+        
+        // 查询星座
+        function findZodiacSign() {
+            if (!selectedDate) {
+                showError('请先选择出生日期');
+                return;
+            }
+
+            showLoading();
+            
+            setTimeout(() => {
+                try {
+                    const birthDate = new Date(selectedDate);
+                    const day = birthDate.getDate();
+                    const month = birthDate.getMonth() + 1;
+                    
+                    // 星座日期范围
+                    const zodiacSigns = [
+                        { name: "摩羯座", start: [12, 22], end: [1, 19], icon: "♑", desc: "务实稳重" },
+                        { name: "水瓶座", start: [1, 20], end: [2, 18], icon: "♒", desc: "创新独立" },
+                        { name: "双鱼座", start: [2, 19], end: [3, 20], icon: "♓", desc: "浪漫敏感" },
+                        { name: "白羊座", start: [3, 21], end: [4, 19], icon: "♈", desc: "勇敢热情" },
+                        { name: "金牛座", start: [4, 20], end: [5, 20], icon: "♉", desc: "稳重务实" },
+                        { name: "双子座", start: [5, 21], end: [6, 20], icon: "♊", desc: "聪明好奇" },
+                        { name: "巨蟹座", start: [6, 21], end: [7, 22], icon: "♋", desc: "温柔体贴" },
+                        { name: "狮子座", start: [7, 23], end: [8, 22], icon: "♌", desc: "自信大方" },
+                        { name: "处女座", start: [8, 23], end: [9, 22], icon: "♍", desc: "细致完美" },
+                        { name: "天秤座", start: [9, 23], end: [10, 22], icon: "♎", desc: "公正和谐" },
+                        { name: "天蝎座", start: [10, 23], end: [11, 21], icon: "♏", desc: "神秘深刻" },
+                        { name: "射手座", start: [11, 22], end: [12, 21], icon: "♐", desc: "自由乐观" }
+                    ];
+                    
+                    // 查找对应的星座
+                    let zodiac = null;
+                    for (const sign of zodiacSigns) {
+                        if ((month === sign.start[0] && day >= sign.start[1]) || 
+                            (month === sign.end[0] && day <= sign.end[1])) {
+                            zodiac = sign;
+                            break;
+                        }
+                    }
+                    
+                    if (zodiac) {
+                        document.getElementById('result').innerHTML = `
+                            <h3>您的星座</h3>
+                            <div class="zodiac-icon" style="font-size: 70px;">${zodiac.icon}</div>
+                            <h2 style="color: #6a11cb; margin: 10px 0; font-size: 28px;">${zodiac.name}</h2>
+                            <p style="color: #7f8c8d; font-style: italic;">${zodiac.desc}</p>
+                            <p style="margin-top: 15px;">出生日期: ${formatDate(birthDate)}</p>
+                        `;
+                    } else {
+                        showError('无法确定您的星座，请检查选择的日期是否正确。');
+                    }
+                } catch (error) {
+                    showError('查询失败，请检查日期格式');
+                }
+            }, 800);
+        }
+        
+        // 计算年龄（附加功能）
+        function calculateAge() {
+            if (!selectedDate) {
+                showError('请先选择出生日期');
+                return;
+            }
+
+            showLoading();
+            
+            setTimeout(() => {
+                try {
+                    const birthDate = new Date(selectedDate);
+                    const today = new Date();
+                    
+                    // 计算周岁和虚岁
+                    const { actualAge, nominalAge } = calculateChineseAge(birthDate);
+                    
+                    // 计算已经出生的天数
+                    const daysAlive = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
+                    
+                    document.getElementById('result').innerHTML = `
+                        <h3>年龄信息</h3>
+                        <div class="age-display">
+                            <div class="age-item">
+                                <h4>周岁</h4>
+                                <div class="number">${actualAge}</div>
+                            </div>
+                            <div class="age-item">
+                                <h4>虚岁</h4>
+                                <div class="number">${nominalAge}</div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 20px;">您已经在这个世界上度过了</p>
+                        <h2 style="color: #6a11cb; font-size: 36px; margin: 10px 0;">${daysAlive} 天</h2>
+                        <p style="color: #7f8c8d;">从 ${formatDate(birthDate)} 至今</p>
+                    `;
+                } catch (error) {
+                    showError('计算失败，请检查日期格式');
+                }
+            }, 800);
+        }
+        
+        // 查询今日运势
+        function checkDailyLuck() {
+            showLoading();
+            
+            setTimeout(() => {
+                try {
+                    const today = new Date();
+                    const seed = today.getDate() + today.getMonth() + today.getFullYear();
+                    const luck = (seed * 13) % 100;
+                    
+                    // 幸运描述
+                    let luckText = "";
+                    if (luck > 80) luckText = "今天运气爆棚！万事皆宜，大胆行动吧！";
+                    else if (luck > 60) luckText = "今天运气不错！会有好事发生哦！";
+                    else if (luck > 40) luckText = "今天运势平平。保持平常心，稳步前进。";
+                    else if (luck > 20) luckText = "今天可能需要小心一点。谨慎决策。";
+                    else luckText = "今天运气不太好，谨慎行事，避免风险。";
+                    
+                    const stars = '★'.repeat(Math.floor(luck/20)) + '☆'.repeat(5-Math.floor(luck/20));
+                    
+                    document.getElementById('result').innerHTML = `
+                        <h3>今日运势</h3>
+                        <div class="stars">${stars}</div>
+                        <p style="font-size: 16px; margin: 15px 0;">${luckText}</p>
+                        <p>幸运指数: ${luck}/100</p>
+                        <div class="luck-meter">
+                            <div class="luck-level" style="width: ${luck}%"></div>
+                        </div>
+                        <p>幸运颜色: <span style="color: #6a11cb; font-weight: 600;">紫色</span></p>
+                        <p>幸运数字: <span style="color: #2575fc; font-weight: 600;">${(luck % 9) + 1}</span></p>
+                    `;
+                } catch (error) {
+                    showError('获取运势失败');
+                }
+            }, 800);
+        }
+        
+        // 导出报告
+        function exportReport() {
+            if (!selectedDate) {
+                showError('请先选择出生日期');
+                return;
+            }
+
+            showLoading();
+            
+            setTimeout(() => {
+                try {
+                    document.getElementById('result').innerHTML = `
+                        <div class="success">
+                            <i class="fas fa-check-circle" style="font-size: 50px; margin-bottom: 18px;"></i>
+                            <h3>导出成功</h3>
+                            <p>完整运势报告已生成！</p>
+                            <p style="margin-top: 15px; font-size: 14px; color: #7f8c8d;">
+                                在实际应用中，这里会生成PDF或文本文件供下载
+                            </p>
+                        </div>
+                    `;
+                    
+                    // 模拟文件下载
+                    setTimeout(() => {
+                        alert('报告导出完成！文件已保存为：生日运势报告.txt');
+                    }, 500);
+                } catch (error) {
+                    showError('导出失败');
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
