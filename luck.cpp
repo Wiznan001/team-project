@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
-#include <sstream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -24,9 +24,45 @@ string getZodiacSign(int month, int day) {
     return "双鱼座";
 }
 
+// 安全获取当前日期字符串（优化时间获取部分）
+string getCurrentDate() {
+    time_t now = time(nullptr);
+    if (now == -1) {
+        throw runtime_error("无法获取当前时间");
+    }
+
+    tm ltm{};  // 栈上创建结构体，避免静态内存问题
+#ifdef _WIN32
+    // Windows 系统使用线程安全的 localtime_s
+    if (localtime_s(&ltm, &now) != 0) {
+        throw runtime_error("时间转换失败");
+    }
+#else
+    // Linux/macOS 等使用线程安全的 localtime_r
+    if (localtime_r(&now, &ltm) == nullptr) {
+        throw runtime_error("时间转换失败");
+    }
+#endif
+
+    // 格式化日期字符串
+    char dateStr[20];
+    snprintf(dateStr, sizeof(dateStr), "%d年%d月%d日",
+        1900 + ltm.tm_year,
+        1 + ltm.tm_mon,
+        ltm.tm_mday);
+    return string(dateStr);
+}
+
 // 生成运势描述
-string generateLuckDescription(const string& sign) {
-    vector<string> luckLevels = {"大吉", "吉", "中吉", "小吉", "平", "小凶", "凶"};
+string generateLuckDescription(const string& sign, const string& date) {
+    // 初始化随机数种子（仅初始化一次）
+    static bool seeded = false;
+    if (!seeded) {
+        srand(time(nullptr));
+        seeded = true;
+    }
+
+    vector<string> luckLevels = { "大吉", "吉", "中吉", "小吉", "平", "小凶", "凶" };
     vector<string> descriptions = {
         "今日运势极佳，适合主动出击，易获意外收获。",
         "人际关系和谐，工作效率提升，可把握合作机会。",
@@ -36,21 +72,15 @@ string generateLuckDescription(const string& sign) {
         "需注意沟通方式，易生小摩擦，耐心应对可化解。",
         "建议以静制动，减少冒险行为，保持心态平和。"
     };
-    vector<string> luckyColors = {"红色", "黄色", "绿色", "蓝色", "紫色", "白色", "粉色"};
-    
-    srand(time(0));
+    vector<string> luckyColors = { "红色", "黄色", "绿色", "蓝色", "紫色", "白色", "粉色" };
+
+    // 随机选择运势内容
     string luck = luckLevels[rand() % luckLevels.size()];
     string desc = descriptions[rand() % descriptions.size()];
     string color = luckyColors[rand() % luckyColors.size()];
     int num = rand() % 9 + 1;
-    
-    // 获取当前日期
-    time_t now = time(0);
-    tm* ltm = localtime(&now);
-    string date = to_string(1900 + ltm->tm_year) + "年" + 
-                 to_string(1 + ltm->tm_mon) + "月" + 
-                 to_string(ltm->tm_mday) + "日";
-    
+
+    // 拼接结果字符串
     string result = date + " " + sign + "运势查询结果\n";
     result += "整体运势：" + luck + "\n";
     result += "运势描述：" + desc + "\n";
@@ -61,50 +91,63 @@ string generateLuckDescription(const string& sign) {
 
 // 导出至文件
 bool exportToFile(const string& content, const string& filename = "今日星座运势.txt") {
-    ofstream outFile(filename, ios::out);
+    ofstream outFile(filename);
     if (!outFile.is_open()) {
         return false;
     }
     outFile << content;
-    outFile.close();
+    outFile.close();  // 显式关闭文件
     return true;
 }
 
 int main() {
-    cout << "=== 星座运势查询工具 ===" << endl;
-    
-    // 输入生日
-    int month, day;
-    cout << "请输入您的生日（月 日，用空格分隔）：";
-    cin >> month >> day;
-    
-    // 验证日期合法性
-    if (month < 1 || month > 12 || day < 1 || day > 31) {
-        cout << "日期输入不合法！" << endl;
+    try {
+        cout << "=== 星座运势查询工具 ===" << endl;
+
+        // 输入生日并验证
+        int month, day;
+        cout << "请输入您的生日（月 日，用空格分隔）：";
+        cin >> month >> day;
+
+        // 简单日期合法性验证
+        if (month < 1 || month > 12 || day < 1 || day > 31) {
+            throw invalid_argument("日期输入不合法，请输入1-12月和1-31日");
+        }
+        if ((month == 2 && day > 29) ||
+            ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)) {
+            throw invalid_argument("日期不存在，请重新输入");
+        }
+
+        // 获取星座和日期
+        string sign = getZodiacSign(month, day);
+        string date = getCurrentDate();  // 使用优化后的时间获取函数
+        cout << "\n您的星座是：" << sign << endl;
+
+        // 生成并显示运势
+        string luckContent = generateLuckDescription(sign, date);
+        cout << "\n--- 今日运势 ---\n" << luckContent << endl;
+
+        // 导出文件
+        char choice;
+        cout << "是否将结果导出至文件？(y/n)：";
+        cin >> choice;
+
+        if (choice == 'y' || choice == 'Y') {
+            if (exportToFile(luckContent)) {
+                cout << "运势已成功导出至 " << "今日星座运势" << endl;
+            }
+            else {
+                throw runtime_error("文件导出失败，请检查权限或路径");
+            }
+        }
+        else {
+            cout << "已取消导出，感谢使用！" << endl;
+        }
+    }
+    catch (const exception& e) {
+        cerr << "\n错误：" << e.what() << endl;
         return 1;
     }
-    
-    // 获取星座并生成运势
-    string sign = getZodiacSign(month, day);
-    cout << "\n您的星座是：" << sign << endl;
-    
-    string luckContent = generateLuckDescription(sign);
-    cout << "\n--- 今日运势 ---\n" << luckContent << endl;
-    
-    // 导出文件
-    char choice;
-    cout << "是否将结果导出至文件？(y/n)：";
-    cin >> choice;
-    
-    if (choice == 'y' || choice == 'Y') {
-        if (exportToFile(luckContent)) {
-            cout << "运势已成功导出至 今日星座运势.txt" << endl;
-        } else {
-            cout << "文件导出失败！" << endl;
-        }
-    } else {
-        cout << "已取消导出，感谢使用！" << endl;
-    }
-    
+
     return 0;
 }
