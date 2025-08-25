@@ -15,24 +15,25 @@ void calculateAges(int birthYear, int birthMonth, int birthDay, int& realAge, in
 }
 int main() {
     int birthYear, birthMonth, birthDay;
-    cout << "ÇëÊäÈëÉúÈÕÄê·Ý£º"<<endl;
+    cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½"<<endl;
     cin >> birthYear;
-    cout << "ÇëÊäÈëÉúÈÕÔÂ·Ý£º"<<endl;
+    cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·Ý£ï¿½"<<endl;
     cin >> birthMonth;
-    cout << "ÇëÊäÈëÉúÈÕÈÕÆÚ£º"<<endl;
+    cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½"<<endl;
     cin >> birthDay;
     if (birthMonth < 1 || birthMonth > 12) {
-        cout << "´íÎó£¬ÔÂ·Ý±ØÐëÔÚ1-12Ö®¼ä£¡" << endl;
+        cout << "ï¿½ï¿½ï¿½ï¿½ï¿½Â·Ý±ï¿½ï¿½ï¿½ï¿½ï¿½1-12Ö®ï¿½ä£¡" << endl;
         return 1;
     }
     if (birthDay < 1 || birthDay > 31) {
-        cout << "´íÎó£¬ÈÕÆÚ±ØÐëÔÚ1-31Ö®¼ä£¡"<< endl;
+        cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½ï¿½ï¿½1-31Ö®ï¿½ä£¡"<< endl;
         return 1;
     }
     int realAge, lunarAge;
     calculateAges(birthYear, birthMonth, birthDay, realAge, lunarAge);
-    cout << "\n²éÑ¯½á¹û" << endl;
-    cout << "ÄúµÄÖÜËêÊÇ£º" << realAge << "Ëê" << endl;
-    cout << "ÄúµÄÐéËêÊÇ£º" << lunarAge << "Ëê" << endl;
+    cout << "\nï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½" << endl;
+    cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç£ï¿½" << realAge << "ï¿½ï¿½" << endl;
+    cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç£ï¿½" << lunarAge << "ï¿½ï¿½" << endl;
     return 0;
 }	
+
