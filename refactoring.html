@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日信息查询系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2575fc;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        
+        h2 {
+            color: #6a11cb;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .date-input {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        select, input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        select:focus, input:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 10px rgba(37, 117, 252, 0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+            min-width: 150px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .grid-item {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .result.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .export-btn {
+            background: linear-gradient(to right, #0f9b0f, #1ed760);
+            margin-top: 15px;
+        }
+        
+        .back-btn {
+            background: linear-gradient(to right, #f7b733, #fc4a1a);
+            margin-top: 20px;
+        }
+        
+        .info-text {
+            text-align: center;
+            margin: 15px 0;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .user-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #6a11cb;
+            font-weight: 500;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-input {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            select, input {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>生日信息查询系统</h1>
+        
+        <!-- 第一步：输入生日 -->
+        <div class="step active" id="step1">
+            <h2>请输入您的出生日期</h2>
+            <div class="date-input">
+                <select id="year">
+                    <option value="">-- 年份 --</option>
+                    <!-- 年份选项由JavaScript生成 -->
+                </select>
+                <select id="month">
+                    <option value="">-- 月份 --</option>
+                    <!-- 月份选项由JavaScript生成 -->
+                </select>
+                <select id="day">
+                    <option value="">-- 日期 --</option>
+                    <!-- 日期选项由JavaScript生成 -->
+                </select>
+            </div>
+            <button class="btn" id="confirm-btn">确认</button>
+        </div>
+        
+        <!-- 第二步：功能选择 -->
+        <div class="step" id="step2">
+            <div class="user-info" id="user-birthday"></div>
+            <h2>请选择您要查询的功能</h2>
+            
+            <div class="grid-container">
+                <div class="grid-item" data-function="birthday">
+                    <i class="fas fa-birthday-cake icon"></i>
+                    <h3>生日信息</h3>
+                    <p>查询距离下一个生日还有多少天</p>
+                </div>
+                
+                <div class="grid-item" data-function="zodiac">
+                    <i class="fas fa-star icon"></i>
+                    <h3>星座查询</h3>
+                    <p>查询您的星座信息</p>
+                </div>
+                
+                <div class="grid-item" data-function="fortune">
+                    <i class="fas fa-crystal-ball icon"></i>
+                    <h3>今日运势</h3>
+                    <p>查询您当日的运势</p>
+                </div>
+                
+                <div class="grid-item" data-function="age">
+                    <i class="fas fa-user icon"></i>
+                    <h3>年龄计算</h3>
+                    <p>查询您的周岁和虚岁</p>
+                </div>
+            </div>
+            
+            <button class="btn back-btn" id="back-to-date">返回修改日期</button>
+        </div>
+        
+        <!-- 加载指示器 -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>正在处理数据，请稍候...</p>
+        </div>
+        
+        <!-- 结果显示区域 -->
+        <div class="result" id="result">
+            <h2 id="result-title">查询结果</h2>
+            <div class="info-text" id="result-content"></div>
+            <button class="btn export-btn" id="export-btn">导出结果</button>
+            <button class="btn back-btn" id="back-to-menu">返回主菜单</button>
+        </div>
+    </div>
+
+    <script>
+        // 使用模块模式封装代码，减少全局变量
+        const BirthdayApp = (() => {
+            // 私有变量
+            let userBirthday = null;
+            const DOM = {};
+            
+            // 星座数据
+            const zodiacData = [
+                { name: '摩羯座', start: [1, 1], end: [1, 19], description: '摩羯座的人务实稳重，有责任感，目标明确。' },
+                { name: '水瓶座', start: [1, 20], end: [2, 18], description: '水瓶座的人富有创造力，思维独特，喜欢追求新奇事物。' },
+                { name: '双鱼座', start: [2, 19], end: [3, 20], description: '双鱼座的人富有同情心，直觉敏锐，具有艺术天赋。' },
+                { name: '白羊座', start: [3, 21], end: [4, 19], description: '白羊座的人充满活力，勇敢直接，喜欢接受挑战。' },
+                { name: '金牛座', start: [4, 20], end: [5, 20], description: '金牛座的人稳重务实，有耐心，注重物质享受。' },
+                { name: '双子座', start: [5, 21], end: [6, 21], description: '双子座的人聪明灵活，善于沟通，喜欢变化。' },
+                { name: '巨蟹座', start: [6, 22], end: [7, 22], description: '巨蟹座的人情感丰富，家庭观念强，有保护欲。' },
+                { name: '狮子座', start: [7, 23], end: [8, 22], description: '狮子座的人自信大方，有领导力，喜欢被关注。' },
+                { name: '处女座', start: [8, 23], end: [9, 22], description: '处女座的人细心谨慎，追求完美，善于分析。' },
+                { name: '天秤座', start: [9, 23], end: [10, 23], description: '天秤座的人追求和谐，善于交际，重视公平。' },
+                { name: '天蝎座', start: [10, 24], end: [11, 22], description: '天蝎座的人意志坚定，直觉敏锐，有深度。' },
+                { name: '射手座', start: [11, 23], end: [12, 21], description: '射手座的人乐观开朗，热爱自由，喜欢冒险。' },
+                { name: '摩羯座', start: [12, 22], end: [12, 31], description: '摩羯座的人务实稳重，有责任感，目标明确。' }
+            ];
+            
+            // 初始化应用
+            function init() {
+                cacheDOM();
+                bindEvents();
+                initDateSelectors();
+            }
+            
+            // 缓存DOM元素
+            function cacheDOM() {
+                DOM.step1 = document.getElementById('step1');
+                DOM.step2 = document.getElementById('step2');
+                DOM.result = document.getElementById('result');
+                DOM.loading = document.getElementById('loading');
+                DOM.year = document.getElementById('year');
+                DOM.month = document.getElementById('month');
+                DOM.day = document.getElementById('day');
+                DOM.userBirthday = document.getElementById('user-birthday');
+                DOM.resultTitle = document.getElementById('result-title');
+                DOM.resultContent = document.getElementById('result-content');
+                
+                // 按钮
+                DOM.confirmBtn = document.getElementById('confirm-btn');
+                DOM.backToDate = document.getElementById('back-to-date');
+                DOM.backToMenu = document.getElementById('back-to-menu');
+                DOM.exportBtn = document.getElementById('export-btn');
+                
+                // 功能选项
+                DOM.functionItems = document.querySelectorAll('.grid-item');
+            }
+            
+            // 绑定事件
+            function bindEvents() {
+                DOM.confirmBtn.addEventListener('click', confirmDate);
+                DOM.backToDate.addEventListener('click', showDateSelection);
+                DOM.backToMenu.addEventListener('click', showFunctionSelection);
+                DOM.exportBtn.addEventListener('click', exportResult);
+                
+                // 使用事件委托处理功能选项点击
+                document.querySelector('.grid-container').addEventListener('click', (e) => {
+                    const item = e.target.closest('.grid-item');
+                    if (item) {
+                        handleFunctionSelection(item.dataset.function);
+                    }
+                });
+                
+                // 年月变化时更新日期选项
+                DOM.year.addEventListener('change', updateDayOptions);
+                DOM.month.addEventListener('change', updateDayOptions);
+            }
+            
+            // 初始化日期选择器
+            function initDateSelectors() {
+                // 生成年份选项（1900-今年）
+                const currentYear = new Date().getFullYear();
+                for (let year = currentYear; year >= 1900; year--) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    DOM.year.appendChild(option);
+                }
+                
+                // 生成月份选项
+                for (let month = 1; month <= 12; month++) {
+                    const option = document.createElement('option');
+                    option.value = month;
+                    option.textContent = month + '月';
+                    DOM.month.appendChild(option);
+                }
+            }
+            
+            // 更新日期选项
+            function updateDayOptions() {
+                const year = DOM.year.value;
+                const month = DOM.month.value;
+                
+                // 清空现有选项（保留第一个）
+                while (DOM.day.options.length > 1) {
+                    DOM.day.remove(1);
+                }
+                
+                if (!year || !month) return;
+                
+                // 计算所选月份的天数
+                const daysInMonth = new Date(year, month, 0).getDate();
+                
+                // 添加日期选项
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const option = document.createElement('option');
+                    option.value = day;
+                    option.textContent = day + '日';
+                    DOM.day.appendChild(option);
+                }
+            }
+            
+            // 确认日期选择
+            function confirmDate() {
+                const year = DOM.year.value;
+                const month = DOM.month.value;
+                const day = DOM.day.value;
+                
+                if (!year || !month || !day) {
+                    alert('请选择完整的出生日期！');
+                    return;
+                }
+                
+                userBirthday = new Date(year, month - 1, day);
+                DOM.userBirthday.textContent = `您的生日: ${year}年${month}月${day}日`;
+                
+                // 切换到功能选择界面
+                showFunctionSelection();
+            }
+            
+            // 显示功能选择界面
+            function showFunctionSelection() {
+                DOM.step1.classList.remove('active');
+                DOM.result.classList.remove('active');
+                DOM.step2.classList.add('active');
+            }
+            
+            // 显示日期选择界面
+            function showDateSelection() {
+                DOM.step2.classList.remove('active');
+                DOM.result.classList.remove('active');
+                DOM.step1.classList.add('active');
+            }
+            
+            // 处理功能选择
+            function handleFunctionSelection(functionType) {
+                showLoading();
+                
+                // 使用setTimeout模拟异步操作，实际应用中可能是API调用
+                setTimeout(() => {
+                    hideLoading();
+                    
+                    switch(functionType) {
+                        case 'birthday':
+                            showBirthdayInfo();
+                            break;
+                        case 'zodiac':
+                            showZodiacInfo();
+                            break;
+                        case 'fortune':
+                            showFortuneInfo();
+                            break;
+                        case 'age':
+                            showAgeInfo();
+                            break;
+                    }
+                    
+                    showResult();
+                }, 800); // 模拟延迟
+            }
+            
+            // 显示加载状态
+            function showLoading() {
+                DOM.loading.style.display = 'block';
+            }
+            
+            // 隐藏加载状态
+            function hideLoading() {
+                DOM.loading.style.display = 'none';
+            }
+            
+            // 显示结果
+            function showResult() {
+                DOM.step2.classList.remove('active');
+                DOM.result.classList.add('active');
+            }
+            
+            // 显示生日信息
+            function showBirthdayInfo() {
+                const today = new Date();
+                const nextBirthday = new Date(today.getFullYear(), userBirthday.getMonth(), userBirthday.getDate());
+                
+                if (today > nextBirthday) {
+                    nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                }
+                
+                const daysUntilBirthday = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+                const daysLived = Math.floor((today - userBirthday) / (1000 * 60 * 60 * 24));
+                
+                DOM.resultTitle.textContent = '生日信息';
+                DOM.resultContent.innerHTML = `
+                    <p>距离您下一个生日还有: <strong>${daysUntilBirthday}</strong> 天</p>
+                    <p>您已经出生了: <strong>${daysLived}</strong> 天</p>
+                    <p>下一个生日日期: <strong>${nextBirthday.getFullYear()}年${nextBirthday.getMonth() + 1}月${nextBirthday.getDate()}日</strong></p>
+                `;
+            }
+            
+            // 显示星座信息
+            function showZodiacInfo() {
+                const month = userBirthday.getMonth() + 1;
+                const day = userBirthday.getDate();
+                
+                // 查找匹配的星座
+                const zodiac = zodiacData.find(z => {
+                    const [startMonth, startDay] = z.start;
+                    const [endMonth, endDay] = z.end;
+                    
+                    return (month === startMonth && day >= startDay) || 
+                           (month === endMonth && day <= endDay);
+                });
+                
+                if (zodiac) {
+                    DOM.resultTitle.textContent = '星座信息';
+                    DOM.resultContent.innerHTML = `
+                        <p>您的星座是: <strong>${zodiac.name}</strong></p>
+                        <p>${zodiac.description}</p>
+                        <p>星座日期范围: ${zodiac.start[0]}月${zodiac.start[1]}日 - ${zodiac.end[0]}月${zodiac.end[1]}日</p>
+                    `;
+                } else {
+                    DOM.resultTitle.textContent = '星座信息';
+                    DOM.resultContent.innerHTML = `<p>无法确定您的星座，请检查生日日期是否正确。</p>`;
+                }
+            }
+            
+            // 显示运势信息
+            function showFortuneInfo() {
+                const fortunes = [
+                    '今天是你幸运日！可能会有意想不到的收获。',
+                    '今天适合尝试新事物，也许会开启新的机会。',
+                    '今天要注意人际关系，多沟通能避免误会。',
+                    '今天财运不错，可以考虑投资或购物。',
+                    '今天工作运佳，适合完成重要任务。',
+                    '今天感情运上升，单身者可能会遇到心仪对象。',
+                    '今天健康运良好，适合进行体育锻炼。',
+                    '今天学习运不错，适合吸收新知识。'
+                ];
+                
+                const colors = ['红色', '蓝色', '绿色', '黄色', '紫色', '橙色'];
+                const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+                
+                DOM.resultTitle.textContent = '今日运势';
+                DOM.resultContent.innerHTML = `
+                    <p>${randomFortune}</p>
+                    <p>幸运数字: <strong>${Math.floor(Math.random() * 10) + 1}</strong></p>
+                    <p>幸运颜色: <strong>${colors[Math.floor(Math.random() * colors.length)]}</strong></p>
+                `;
+            }
+            
+            // 显示年龄信息
+            function showAgeInfo() {
+                const today = new Date();
+                const birthYear = userBirthday.getFullYear();
+                const birthMonth = userBirthday.getMonth();
+                const birthDate = userBirthday.getDate();
+                
+                const currentYear = today.getFullYear();
+                const currentMonth = today.getMonth();
+                const currentDate = today.getDate();
+                
+                // 计算周岁
+                let actualAge = currentYear - birthYear;
+                if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDate < birthDate)) {
+                    actualAge--;
+                }
+                
+                // 虚岁（中国传统年龄计算方式）
+                let nominalAge = currentYear - birthYear + 1;
+                
+                // 计算精确年龄（年+月）
+                let months = (currentYear - birthYear) * 12 + (currentMonth - birthMonth);
+                if (currentDate < birthDate) months--;
+                const exactYears = Math.floor(months / 12);
+                const exactMonths = months % 12;
+                
+                DOM.resultTitle.textContent = '年龄信息';
+                DOM.resultContent.innerHTML = `
+                    <p>您的周岁是: <strong>${actualAge}</strong> 岁</p>
+                    <p>您的虚岁是: <strong>${nominalAge}</strong> 岁</p>
+                    <p>精确年龄: <strong>${exactYears}</strong> 年 <strong>${exactMonths}</strong> 个月</p>
+                    <p>您出生于 ${birthYear} 年，今年是 ${currentYear} 年</p>
+                `;
+            }
+            
+            // 导出结果
+            function exportResult() {
+                const title = DOM.resultTitle.textContent;
+                const content = DOM.resultContent.textContent;
+                const userDate = `${userBirthday.getFullYear()}年${userBirthday.getMonth() + 1}月${userBirthday.getDate()}日`;
+                
+                const exportContent = `
+生日信息查询系统 - 导出结果
+生成时间: ${new Date().toLocaleString()}
+用户生日: ${userDate}
+查询项目: ${title}
+查询结果:
+${content}
+感谢使用生日信息查询系统！
+                `;
+                
+                const blob = new Blob([exportContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `生日查询结果_${new Date().getTime()}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 清理
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                alert('结果已导出下载！');
+            }
+            
+            // 公共方法
+            return {
+                init: init
+            };
+        })();
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', BirthdayApp.init);
+    </script>
+</body>
+</html>
