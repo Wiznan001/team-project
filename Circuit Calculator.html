@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通用电流计算器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+            padding: 30px;
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .circuit-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .circuit-title {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .circuit-diagram {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .topology-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .topology-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: #e7e7e7;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .topology-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .result-label {
+            color: #7f8c8d;
+        }
+        
+        .result-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .current-result {
+            color: #e74c3c;
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+        }
+        
+        /* 电路图样式 */
+        .circuit-svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .circuit-path {
+            stroke: #2c3e50;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .resistor {
+            stroke: #3498db;
+            stroke-width: 2;
+        }
+        
+        .battery {
+            stroke: #e74c3c;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>通用电流计算器</h1>
+            <p class="subtitle">计算两种不同电路拓扑结构中的电流</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="circuit-section">
+                <h2 class="circuit-title">电路拓扑结构</h2>
+                <div class="circuit-diagram">
+                    <svg class="circuit-svg" viewBox="0 0 300 160" id="circuit-svg">
+                        <!-- 电路图将通过JavaScript动态生成 -->
+                    </svg>
+                </div>
+                
+                <div class="topology-selector">
+                    <button class="topology-btn active" data-topology="1">拓扑结构 1</button>
+                    <button class="topology-btn" data-topology="2">拓扑结构 2</button>
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <h2 class="circuit-title">输入参数</h2>
+                
+                <div class="input-group">
+                    <label for="voltage">电压 V (伏特)</label>
+                    <input type="number" id="voltage" placeholder="请输入电压值" min="0" step="any">
+                </div>
+                
+                <div class="input-group">
+                    <label for="resistor1">电阻 R₁ (欧姆)</label>
+                    <input type="number" id="resistor1" placeholder="请输入电阻值" min="0" step="any">
+                </div>
+                
+                <div class="input-group">
+                    <label for="resistor2">电阻 R₂ (欧姆)</label>
+                    <input type="number" id="resistor2" placeholder="请输入电阻值" min="0" step="any">
+                </div>
+                
+                <div class="input-group">
+                    <label for="resistor3">电阻 R₃ (欧姆)</label>
+                    <input type="number" id="resistor3" placeholder="请输入电阻值" min="0" step="any">
+                </div>
+                
+                <div class="input-group">
+                    <label for="resistor4">电阻 R₄ (欧姆)</label>
+                    <input type="number" id="resistor4" placeholder="请输入电阻值" min="0" step="any">
+                </div>
+                
+                <button class="calculate-btn" id="calculate-btn">计算电流</button>
+                
+                <div class="results">
+                    <h3>计算结果</h3>
+                    <div class="result-item">
+                        <span class="result-label">电压 V:</span>
+                        <span class="result-value" id="result-voltage">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">电阻 R₁:</span>
+                        <span class="result-value" id="result-r1">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">电阻 R₂:</span>
+                        <span class="result-value" id="result-r2">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">电阻 R₃:</span>
+                        <span class="result-value" id="result-r3">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">电阻 R₄:</span>
+                        <span class="result-value" id="result-r4">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">总电阻 Rₜ:</span>
+                        <span class="result-value" id="result-total-resistance">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">电流 I:</span>
+                        <span class="result-value current-result" id="result-current">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 通用电流计算器 | 保留所有权利</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const topologyButtons = document.querySelectorAll('.topology-btn');
+            const calculateButton = document.getElementById('calculate-btn');
+            const voltageInput = document.getElementById('voltage');
+            const resistorInputs = [
+                document.getElementById('resistor1'),
+                document.getElementById('resistor2'),
+                document.getElementById('resistor3'),
+                document.getElementById('resistor4')
+            ];
+            
+            let currentTopology = 1;
+            
+            // 初始化电路图
+            updateCircuitDiagram(currentTopology);
+            
+            // 拓扑结构选择
+            topologyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    topologyButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTopology = parseInt(this.dataset.topology);
+                    updateCircuitDiagram(currentTopology);
+                });
+            });
+            
+            // 计算按钮点击事件
+            calculateButton.addEventListener('click', function() {
+                calculateCurrent(currentTopology);
+            });
+            
+            // 更新电路图
+            function updateCircuitDiagram(topology) {
+                const svg = document.getElementById('circuit-svg');
+                svg.innerHTML = ''; // 清空现有内容
+                
+                if (topology === 1) {
+                    // 拓扑结构1: R1和R2并联，再与R3和R4串联
+                    svg.innerHTML = `
+                        <path d="M50,80 H70" class="circuit-path"/>
+                        <path d="M70,80 V50" class="circuit-path"/>
+                        <path d="M70,50 H130" class="circuit-path"/>
+                        <path d="M70,80 V110" class="circuit-path"/>
+                        <path d="M70,110 H130" class="circuit-path"/>
+                        <path d="M130,50 V110" class="circuit-path"/>
+                        <path d="M130,80 H150" class="circuit-path"/>
+                        <path d="M150,80 H170" class="circuit-path"/>
+                        <path d="M170,80 V50" class="circuit-path"/>
+                        <path d="M170,50 H230" class="circuit-path"/>
+                        <path d="M170,80 V110" class="circuit-path"/>
+                        <path d="M170,110 H230" class="circuit-path"/>
+                        <path d="M230,50 V110" class="circuit-path"/>
+                        <path d="M230,80 H250" class="circuit-path"/>
+                        
+                        <rect x="90" y="40" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="110" y="55" text-anchor="middle" fill="#2c3e50">R₁</text>
+                        
+                        <rect x="90" y="100" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="110" y="115" text-anchor="middle" fill="#2c3e50">R₂</text>
+                        
+                        <rect x="190" y="40" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="210" y="55" text-anchor="middle" fill="#2c3e50">R₃</text>
+                        
+                        <rect x="190" y="100" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="210" y="115" text-anchor="middle" fill="#2c3e50">R₄</text>
+                        
+                        <path d="M250,80 H270" class="circuit-path"/>
+                        <path d="M270,80 V50" class="circuit-path"/>
+                        <path d="M270,50 H240" class="battery"/>
+                        <path d="M270,50 H300" class="circuit-path"/>
+                        <path d="M270,80 V110" class="circuit-path"/>
+                        <path d="M270,110 H240" class="battery"/>
+                        <path d="M270,110 H300" class="circuit-path"/>
+                        <path d="M300,50 V110" class="circuit-path"/>
+                        <path d="M300,80 H320" class="circuit-path"/>
+                        
+                        <text x="255" y="70" text-anchor="middle" fill="#e74c3c">V</text>
+                        <text x="40" y="85" text-anchor="middle" fill="#2c3e50">I</text>
+                    `;
+                } else {
+                    // 拓扑结构2: R1和R2串联，再与R3和R4并联
+                    svg.innerHTML = `
+                        <path d="M50,80 H70" class="circuit-path"/>
+                        <path d="M70,80 V50" class="circuit-path"/>
+                        <path d="M70,50 H110" class="circuit-path"/>
+                        <path d="M110,50 H150" class="circuit-path"/>
+                        <path d="M150,50 V110" class="circuit-path"/>
+                        <path d="M150,110 H110" class="circuit-path"/>
+                        <path d="M110,110 H70" class="circuit-path"/>
+                        <path d="M70,110 V80" class="circuit-path"/>
+                        <path d="M70,80 H90" class="circuit-path"/>
+                        
+                        <rect x="110" y="30" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="130" y="45" text-anchor="middle" fill="#2c3e50">R₁</text>
+                        
+                        <rect x="110" y="110" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="130" y="125" text-anchor="middle" fill="#2c3e50">R₂</text>
+                        
+                        <path d="M150,50 H190" class="circuit-path"/>
+                        <path d="M190,50 V110" class="circuit-path"/>
+                        <path d="M190,110 H150" class="circuit-path"/>
+                        
+                        <rect x="190" y="30" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="210" y="45" text-anchor="middle" fill="#2c3e50">R₃</text>
+                        
+                        <rect x="190" y="110" width="40" height="20" rx="5" class="resistor"/>
+                        <text x="210" y="125" text-anchor="middle" fill="#2c3e50">R₄</text>
+                        
+                        <path d="M230,50 V110" class="circuit-path"/>
+                        <path d="M230,80 H250" class="circuit-path"/>
+                        
+                        <path d="M250,80 H270" class="circuit-path"/>
+                        <path d="M270,80 V50" class="circuit-path"/>
+                        <path d="M270,50 H240" class="battery"/>
+                        <path d="M270,50 H300" class="circuit-path"/>
+                        <path d="M270,80 V110" class="circuit-path"/>
+                        <path d="M270,110 H240" class="battery"/>
+                        <path d="M270,110 H300" class="circuit-path"/>
+                        <path d="M300,50 V110" class="circuit-path"/>
+                        <path d="M300,80 H320" class="circuit-path"/>
+                        
+                        <text x="255" y="70" text-anchor="middle" fill="#e74c3c">V</text>
+                        <text x="40" y="85" text-anchor="middle" fill="#2c3e50">I</text>
+                    `;
+                }
+            }
+            
+            // 计算电流
+            function calculateCurrent(topology) {
+                // 获取输入值
+                const voltage = parseFloat(voltageInput.value);
+                const resistors = resistorInputs.map(input => parseFloat(input.value));
+                
+                // 验证输入
+                if (isNaN(voltage) || resistors.some(isNaN)) {
+                    alert('请输入有效的数值！');
+                    return;
+                }
+                
+                if (voltage < 0 || resistors.some(r => r < 0)) {
+                    alert('电压和电阻值不能为负数！');
+                    return;
+                }
+                
+                // 计算总电阻
+                let totalResistance;
+                if (topology === 1) {
+                    // 拓扑结构1: R1和R2并联，再与R3和R4串联
+                    const parallelResistance = (resistors[0] * resistors[1]) / (resistors[0] + resistors[1]);
+                    totalResistance = parallelResistance + resistors[2] + resistors[3];
+                } else {
+                    // 拓扑结构2: R1和R2串联，再与R3和R4并联
+                    const seriesResistance = resistors[0] + resistors[1];
+                    const parallelResistance = (resistors[2] * resistors[3]) / (resistors[2] + resistors[3]);
+                    totalResistance = (seriesResistance * parallelResistance) / (seriesResistance + parallelResistance);
+                }
+                
+                // 计算电流
+                const current = voltage / totalResistance;
+                
+                // 显示结果
+                document.getElementById('result-voltage').textContent = voltage.toFixed(3) + ' V';
+                document.getElementById('result-r1').textContent = resistors[0].toFixed(3) + ' Ω';
+                document.getElementById('result-r2').textContent = resistors[1].toFixed(3) + ' Ω';
+                document.getElementById('result-r3').textContent = resistors[2].toFixed(3) + ' Ω';
+                document.getElementById('result-r4').textContent = resistors[3].toFixed(3) + ' Ω';
+                document.getElementById('result-total-resistance').textContent = totalResistance.toFixed(3) + ' Ω';
+                document.getElementById('result-current').textContent = current.toFixed(3) + ' A';
+            }
+        });
+    </script>
+</body>
+</html>
