@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日查询系统 - 交互式单元测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a6cf7;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        h2 {
+            color: #4a6cf7;
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 5px solid #4a6cf7;
+        }
+        
+        .test-case {
+            padding: 15px;
+            margin: 15px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        .test-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .input-group label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .input-group input, .input-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            border-color: #4a6cf7;
+            outline: none;
+        }
+        
+        .test-btn {
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .test-btn:hover {
+            background: #3a5cd8;
+        }
+        
+        .test-result {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .test-result.visible {
+            display: block;
+        }
+        
+        .pass {
+            background: #e7f6e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+        
+        .fail {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+        
+        .result-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #eef5ff;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .summary h3 {
+            color: #4a6cf7;
+            margin-bottom: 15px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            padding: 15px 25px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a6cf7;
+        }
+        
+        .run-all-btn {
+            background: linear-gradient(135deg, #4a6cf7, #6a11cb);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 20px auto;
+            display: block;
+            transition: transform 0.2s;
+        }
+        
+        .run-all-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .test-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>生日查询系统 - 交互式单元测试</h1>
+        
+        <button class="run-all-btn" onclick="runAllTests()">运行所有测试</button>
+        
+        <!-- 日期功能测试 -->
+        <div class="test-section">
+            <h2>📅 日期功能测试</h2>
+            
+            <div class="test-case">
+                <div class="test-title">测试1: 日期选项更新功能</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test1-year">测试年份:</label>
+                        <input type="number" id="test1-year" value="2020" min="1900" max="2100">
+                    </div>
+                    <div class="input-group">
+                        <label for="test1-month">测试月份:</label>
+                        <select id="test1-month">
+                            <option value="1">1月</option>
+                            <option value="2" selected>2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testDateOptions()">运行测试</button>
+                <div class="test-result" id="test1-result"></div>
+            </div>
+            
+            <div class="test-case">
+                <div class="test-title">测试2: 日期验证功能</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test2-year">年份:</label>
+                        <input type="number" id="test2-year" value="2023" min="1900" max="2100">
+                    </div>
+                    <div class="input-group">
+                        <label for="test2-month">月份:</label>
+                        <input type="number" id="test2-month" value="2" min="1" max="12">
+                    </div>
+                    <div class="input-group">
+                        <label for="test2-day">日期:</label>
+                        <input type="number" id="test2-day" value="30" min="1" max="31">
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testDateValidation()">运行测试</button>
+                <div class="test-result" id="test2-result"></div>
+            </div>
+        </div>
+        
+        <!-- 生日计算测试 -->
+        <div class="test-section">
+            <h2>🎂 生日计算测试</h2>
+            
+            <div class="test-case">
+                <div class="test-title">测试3: 距离生日天数计算</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test3-current-date">当前日期:</label>
+                        <input type="date" id="test3-current-date" value="2023-06-15">
+                    </div>
+                    <div class="input-group">
+                        <label for="test3-birthday">生日日期:</label>
+                        <input type="date" id="test3-birthday" value="1990-08-20">
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testDaysUntilBirthday()">运行测试</button>
+                <div class="test-result" id="test3-result"></div>
+            </div>
+            
+            <div class="test-case">
+                <div class="test-title">测试4: 已出生天数计算</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test4-birth-date">出生日期:</label>
+                        <input type="date" id="test4-birth-date" value="2000-01-01">
+                    </div>
+                    <div class="input-group">
+                        <label for="test4-current-date">当前日期:</label>
+                        <input type="date" id="test4-current-date" value="2000-01-11">
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testDaysLived()">运行测试</button>
+                <div class="test-result" id="test4-result"></div>
+            </div>
+        </div>
+        
+        <!-- 星座功能测试 -->
+        <div class="test-section">
+            <h2>✨ 星座功能测试</h2>
+            
+            <div class="test-case">
+                <div class="test-title">测试5: 星座判断准确性</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test5-month">月份:</label>
+                        <input type="number" id="test5-month" value="1" min="1" max="12">
+                    </div>
+                    <div class="input-group">
+                        <label for="test5-day">日期:</label>
+                        <input type="number" id="test5-day" value="20" min="1" max="31">
+                    </div>
+                    <div class="input-group">
+                        <label for="test5-expected">预期星座:</label>
+                        <select id="test5-expected">
+                            <option value="水瓶座">水瓶座</option>
+                            <option value="双鱼座">双鱼座</option>
+                            <option value="白羊座">白羊座</option>
+                            <option value="金牛座">金牛座</option>
+                            <option value="双子座">双子座</option>
+                            <option value="巨蟹座">巨蟹座</option>
+                            <option value="狮子座">狮子座</option>
+                            <option value="处女座">处女座</option>
+                            <option value="天秤座">天秤座</option>
+                            <option value="天蝎座">天蝎座</option>
+                            <option value="射手座">射手座</option>
+                            <option value="摩羯座" selected>摩羯座</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testZodiacSign()">运行测试</button>
+                <div class="test-result" id="test5-result"></div>
+            </div>
+        </div>
+        
+        <!-- 年龄计算测试 -->
+        <div class="test-section">
+            <h2>👤 年龄计算测试</h2>
+            
+            <div class="test-case">
+                <div class="test-title">测试6: 周岁计算准确性</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test6-birthday">出生日期:</label>
+                        <input type="date" id="test6-birthday" value="2000-06-14">
+                    </div>
+                    <div class="input-group">
+                        <label for="test6-current-date">当前日期:</label>
+                        <input type="date" id="test6-current-date" value="2023-06-15">
+                    </div>
+                    <div class="input-group">
+                        <label for="test6-expected">预期周岁:</label>
+                        <input type="number" id="test6-expected" value="23" min="0" max="150">
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testActualAge()">运行测试</button>
+                <div class="test-result" id="test6-result"></div>
+            </div>
+            
+            <div class="test-case">
+                <div class="test-title">测试7: 虚岁计算准确性</div>
+                <div class="test-controls">
+                    <div class="input-group">
+                        <label for="test7-birth-year">出生年份:</label>
+                        <input type="number" id="test7-birth-year" value="2000" min="1900" max="2100">
+                    </div>
+                    <div class="input-group">
+                        <label for="test7-current-year">当前年份:</label>
+                        <input type="number" id="test7-current-year" value="2023" min="1900" max="2100">
+                    </div>
+                    <div class="input-group">
+                        <label for="test7-expected">预期虚岁:</label>
+                        <input type="number" id="test7-expected" value="24" min="0" max="150">
+                    </div>
+                </div>
+                <button class="test-btn" onclick="testNominalAge()">运行测试</button>
+                <div class="test-result" id="test7-result"></div>
+            </div>
+        </div>
+        
+        <!-- 测试统计 -->
+        <div class="summary">
+            <h3>测试结果统计</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <div>总测试数</div>
+                    <div class="stat-value" id="total-tests">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>通过</div>
+                    <div class="stat-value" id="passed-tests">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>失败</div>
+                    <div class="stat-value" id="failed-tests">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>通过率</div>
+                    <div class="stat-value" id="pass-rate">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 测试统计
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+        
+        // 更新测试统计
+        function updateStats() {
+            document.getElementById('total-tests').textContent = totalTests;
+            document.getElementById('passed-tests').textContent = passedTests;
+            document.getElementById('failed-tests').textContent = failedTests;
+            document.getElementById('pass-rate').textContent = 
+                totalTests > 0 ? Math.round((passedTests / totalTests) * 100) + '%' : '0%';
+        }
+        
+        // 显示测试结果
+        function showResult(testId, success, message, details = '') {
+            totalTests++;
+            const resultElement = document.getElementById(testId);
+            
+            if (success) {
+                passedTests++;
+                resultElement.innerHTML = `<strong>✓ 通过:</strong> ${message}`;
+                resultElement.className = 'test-result visible pass';
+            } else {
+                failedTests++;
+                resultElement.innerHTML = `<strong>✗ 失败:</strong> ${message}`;
+                resultElement.className = 'test-result visible fail';
+            }
+            
+            if (details) {
+                resultElement.innerHTML += `<div class="result-details">${details}</div>`;
+            }
+            
+            updateStats();
+        }
+        
+        // 测试1: 日期选项更新功能
+        function testDateOptions() {
+            try {
+                const year = parseInt(document.getElementById('test1-year').value);
+                const month = parseInt(document.getElementById('test1-month').value);
+                
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+                
+                let expectedDays = new Date(year, month, 0).getDate();
+                if (month === 2) {
+                    expectedDays = isLeapYear ? 29 : 28;
+                }
+                
+                const details = `年份: ${year}, 月份: ${month}, 计算天数: ${daysInMonth}, 预期天数: ${expectedDays}`;
+                
+                if (daysInMonth === expectedDays) {
+                    showResult('test1-result', true, `日期计算正确 (${daysInMonth}天)`, details);
+                } else {
+                    showResult('test1-result', false, `日期计算错误`, details);
+                }
+            } catch (error) {
+                showResult('test1-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 测试2: 日期验证功能
+        function testDateValidation() {
+            try {
+                const year = parseInt(document.getElementById('test2-year').value);
+                const month = parseInt(document.getElementById('test2-month').value);
+                const day = parseInt(document.getElementById('test2-day').value);
+                
+                const testDate = new Date(year, month - 1, day);
+                const isValid = testDate.getFullYear() === year && 
+                               testDate.getMonth() === month - 1 && 
+                               testDate.getDate() === day;
+                
+                const details = `输入日期: ${year}-${month}-${day}, 验证结果: ${isValid ? '有效' : '无效'}`;
+                
+                if (!isValid) {
+                    showResult('test2-result', true, "无效日期被正确识别", details);
+                } else {
+                    showResult('test2-result', false, "无效日期被错误接受", details);
+                }
+            } catch (error) {
+                showResult('test2-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 测试3: 距离生日天数计算
+        function testDaysUntilBirthday() {
+            try {
+                const currentDate = new Date(document.getElementById('test3-current-date').value);
+                const birthday = new Date(document.getElementById('test3-birthday').value);
+                
+                const nextBirthday = new Date(currentDate.getFullYear(), birthday.getMonth(), birthday.getDate());
+                if (currentDate > nextBirthday) {
+                    nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                }
+                
+                const daysUntilBirthday = Math.ceil((nextBirthday - currentDate) / (1000 * 60 * 60 * 24));
+                
+                const details = `当前日期: ${currentDate.toLocaleDateString()}, 生日: ${birthday.toLocaleDateString()}, 距离天数: ${daysUntilBirthday}`;
+                showResult('test3-result', true, `计算完成: ${daysUntilBirthday} 天`, details);
+            } catch (error) {
+                showResult('test3-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 测试4: 已出生天数计算
+        function testDaysLived() {
+            try {
+                const birthDate = new Date(document.getElementById('test4-birth-date').value);
+                const currentDate = new Date(document.getElementById('test4-current-date').value);
+                
+                const daysLived = Math.floor((currentDate - birthDate) / (1000 * 60 * 60 * 24));
+                
+                const details = `出生日期: ${birthDate.toLocaleDateString()}, 当前日期: ${currentDate.toLocaleDateString()}, 已出生天数: ${daysLived}`;
+                showResult('test4-result', true, `计算完成: ${daysLived} 天`, details);
+            } catch (error) {
+                showResult('test4-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 测试5: 星座判断准确性
+        function testZodiacSign() {
+            try {
+                const month = parseInt(document.getElementById('test5-month').value);
+                const day = parseInt(document.getElementById('test5-day').value);
+                const expected = document.getElementById('test5-expected').value;
+                
+                const result = getZodiacSign(month, day);
+                const details = `输入: ${month}月${day}日, 计算结果: ${result}, 预期: ${expected}`;
+                
+                if (result === expected) {
+                    showResult('test5-result', true, `星座判断正确: ${result}`, details);
+                } else {
+                    showResult('test5-result', false, `星座判断错误`, details);
+                }
+            } catch (error) {
+                showResult('test5-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 获取星座
+        function getZodiacSign(month, day) {
+            if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return '水瓶座';
+            else if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return '双鱼座';
+            else if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return '白羊座';
+            else if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return '金牛座';
+            else if ((month === 5 && day >= 21) || (month === 6 && day <= 21)) return '双子座';
+            else if ((month === 6 && day >= 22) || (month === 7 && day <= 22)) return '巨蟹座';
+            else if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return '狮子座';
+            else if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return '处女座';
+            else if ((month === 9 && day >= 23) || (month === 10 && day <= 23)) return '天秤座';
+            else if ((month === 10 && day >= 24) || (month === 11 && day <= 22)) return '天蝎座';
+            else if ((month === 11 && day >= 23) || (month === 12 && day <= 21)) return '射手座';
+            else if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return '摩羯座';
+            return '未知';
+        }
+        
+        // 测试6: 周岁计算准确性
+        function testActualAge() {
+            try {
+                const birthday = new Date(document.getElementById('test6-birthday').value);
+                const currentDate = new Date(document.getElementById('test6-current-date').value);
+                const expected = parseInt(document.getElementById('test6-expected').value);
+                
+                let age = currentDate.getFullYear() - birthday.getFullYear();
+                if (currentDate.getMonth() < birthday.getMonth() || 
+                    (currentDate.getMonth() === birthday.getMonth() && currentDate.getDate() < birthday.getDate())) {
+                    age--;
+                }
+                
+                const details = `出生日期: ${birthday.toLocaleDateString()}, 当前日期: ${currentDate.toLocaleDateString()}, 计算周岁: ${age}, 预期: ${expected}`;
+                
+                if (age === expected) {
+                    showResult('test6-result', true, `周岁计算正确: ${age}岁`, details);
+                } else {
+                    showResult('test6-result', false, `周岁计算错误`, details);
+                }
+            } catch (error) {
+                showResult('test6-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 测试7: 虚岁计算准确性
+        function testNominalAge() {
+            try {
+                const birthYear = parseInt(document.getElementById('test7-birth-year').value);
+                const currentYear = parseInt(document.getElementById('test7-current-year').value);
+                const expected = parseInt(document.getElementById('test7-expected').value);
+                
+                const nominalAge = currentYear - birthYear + 1;
+                const details = `出生年份: ${birthYear}, 当前年份: ${currentYear}, 计算虚岁: ${nominalAge}, 预期: ${expected}`;
+                
+                if (nominalAge === expected) {
+                    showResult('test7-result', true, `虚岁计算正确: ${nominalAge}岁`, details);
+                } else {
+                    showResult('test7-result', false, `虚岁计算错误`, details);
+                }
+            } catch (error) {
+                showResult('test7-result', false, `错误: ${error.message}`);
+            }
+        }
+        
+        // 运行所有测试
+        function runAllTests() {
+            testDateOptions();
+            testDateValidation();
+            testDaysUntilBirthday();
+            testDaysLived();
+            testZodiacSign();
+            testActualAge();
+            testNominalAge();
+        }
+    </script>
+</body>
+</html>
